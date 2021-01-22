@@ -4,14 +4,26 @@
 import sys
 import getopt
 import time
+import syslog
+import json
+import random
+
+def syslog_message( message ):
+    syslog.syslog( "[PROJECT01] " + message )
 
 def help_info():
-    print( "Add help info here" )
-
-def sensor( sensor_name, sleep_count ):
+    #print( "Add help info here" )
+    syslog_message( "Add help info here" )
+    
+def sensor( sensor_name, sleep_count, data ):
     while True:
         time.sleep(sleep_count)
-        print( "Sensor " + sensor_name + " is alive" )
+        
+        data["temp"] += (random.randrange(10) - 5)
+        JSN_v = json.dumps( data )
+
+        #print( "Sensor " + sensor_name + " is alive" )
+        syslog_message( "Sensor " + sensor_name + " is alive with " + JSN_v )
 
 def main( argv ):
 
@@ -19,6 +31,8 @@ def main( argv ):
     MST_b = False
     NME_s = ""
     CNT_v = 5
+    
+    OUT_d = { "temp": 72, "alarm": 0, "error": 0 }
     
     try:
         opts, args = getopt.getopt( argv, "hsmn:c:", ["help", "sensor", "master", "name=", "count=" ] )
@@ -53,8 +67,9 @@ def main( argv ):
     
     else:
         if( SNR_b == True ):
-            print( "Sensor thread with name " + NME_s + " setup" )
-            sensor( NME_s, CNT_v )
+            #print( "Sensor thread with name " + NME_s + " setup" )
+            syslog_message( "Sensor thread with name " + NME_s + " setup" )
+            sensor( NME_s, CNT_v, OUT_d )
             
         elif( MST_b == True ):
             print( "Master thread with name " + NME_s + " setup" )
