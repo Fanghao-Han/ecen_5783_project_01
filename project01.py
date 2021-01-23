@@ -115,6 +115,10 @@ def main( argv ):
         signal.signal( signal.SIGINT, signal_handler_suppress )
     else:
         signal.signal( signal.SIGINT, signal_handler_exit )
+        
+    if( not os.path.isdir('txt_logs') ):
+        os.mkdir('txt_logs')
+        syslog_message( "txt_logs dir created" )
 
     if( (SNR_b == True) and (MST_b == True) ):
         print( "ERROR: Cannot be defined as master and as sensor; try again" )
