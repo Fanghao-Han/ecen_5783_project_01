@@ -7,8 +7,8 @@ Project Title
 Fanghao Han<br />
 Martin Lennartz<br />
 <br />
-Project 1<br />
 Embedded Interface Design (ECEN 5783)<br />
+Project 1<br />
 Spring 2021
 </h2>
 
