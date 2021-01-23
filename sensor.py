@@ -41,14 +41,12 @@ def sensor( sleep_count, log_name, data ):
         time.sleep( sleep_count )
         
         data["update"] = True
+        data["count"] = (data["count"] + 1)%10000
         data["temp"] += ( random.randrange(10) - 5 )
-
-        #print( "Sensor " + sensor_name + " is alive" )
-        syslog_message( "Sensor " + data["name"] + " is alive with " + json.dumps( data ) )
         
         write_json( "txt_logs/" + log_name, json.dumps( data ), True )
-        
-        data["count"] = (data["count"] + 1)%10000
+
+        syslog_message( "Sensor " + data["name"] + " is alive with " + json.dumps( data ) )
         
 def write_json( write_file, json_string, append ):
     if( append ):
@@ -65,12 +63,6 @@ def main( argv ):
 
     # Exit variable: Bool
     EXT_b = False
-    # Sensor variable: Bool
-    SNR_b = False
-    # Master variable: Bool
-    MST_b = False
-    # Suppress variable: Bool
-    SPP_b = False
     # Delay variable: Value
     DLY_v = 5
     # Filename variable: String
@@ -116,7 +108,7 @@ def main( argv ):
             
     write_json( "txt_logs/" + FLN_v, json.dumps( OUT_d ), False )
     
-    syslog_message( "Sensor thread with name " + OUT_d["name"] + " setup with log file name " + FLN_v )
+    syslog_message( "Sensor thread with name " + OUT_d["name"] + " setup with log file name " + FLN_v + " and with " + json.dumps( OUT_d ) )
     
     sensor( DLY_v, FLN_v, OUT_d )
             
