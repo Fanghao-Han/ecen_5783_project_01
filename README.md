@@ -1,13 +1,19 @@
 
-<h1>Embedded Design Interface: Project 1</h1>
+<h1>
+Project Title
+</h1>
 
 <h2>
 Fanghao Han<br />
 Martin Lennartz<br />
 <br />
-ECEN 5783 - Spring 2021
+Project 1<br />
+Embedded Interface Design (ECEN 5783)<br />
+Spring 2021
 </h2>
 
-- [ ] Add description here
+Add description here
+- [?] Sensor
+- [?] Master
 
-- [ ] Add script usage here
+Add script usage here
