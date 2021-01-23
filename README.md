@@ -1,11 +1,14 @@
 
 # Embedded Design Interface: Project 1
 
-## Martin Lennartz
-## Fanghao Han
+<h2>
+Martin Lennartz
 
-## ECEN 5783 - Spring 2021
+Fanghao Han
 
-Add description here
+ECEN 5783 - Spring 2021
+</h2>
 
-Add script usage here
+- [ ] Add description here
+
+- [ ] Add script usage here
