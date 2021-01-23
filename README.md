@@ -1,14 +1,14 @@
 
 <h1>
-Project Title
+Project 1: Project Title
 </h1>
 
 <h2>
 Fanghao Han<br />
 Martin Lennartz<br />
 <br />
-Embedded Interface Design (ECEN 5783)<br />
-Project 1<br />
+Embedded Interface Design<br />
+ECEN 5783<br />
 Spring 2021
 </h2>
 
