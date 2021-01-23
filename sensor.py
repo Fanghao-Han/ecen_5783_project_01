@@ -8,78 +8,121 @@
 #
 ###############################################################################
 
-# add signal handler
-
+# packages
+import getopt
 import glob
+import json
 import os
-import project01
+import random
 import signal
-import subprocess
 import sys
+import syslog
 import time
 
-MIN_DELAY = 1
-MAX_DELAY = 15
-MAX_COUNT = 5
+from os import path
 
+MAX_SENSORS = 50
+
+# Signal Handler    
 def signal_handler(signum, frame):
     global EXT_b
     EXT_b = True
+    syslog_message( "Signal hit; will exit gracefully" )
+
+def syslog_message( message ):
+    syslog.syslog( "[PROJECT01] " + message )
+
+def help_info():
+    #print( "Add help info here" )
+    syslog_message( "Add help info here" )
     
-    print( "Signal hit; will exit gracefully" )
-    project01.syslog_message( "Signal hit" )
-    
-def main():
+def sensor( sleep_count, log_name, data ):
+    while( not EXT_b ):
+        time.sleep( sleep_count )
+        
+        data["update"] = True
+        data["temp"] += ( random.randrange(10) - 5 )
+
+        #print( "Sensor " + sensor_name + " is alive" )
+        syslog_message( "Sensor " + data["name"] + " is alive with " + json.dumps( data ) )
+        
+        write_json( "txt_logs/" + log_name, json.dumps( data ), True )
+        
+        data["count"] = (data["count"] + 1)%10000
+        
+def write_json( write_file, json_string, append ):
+    if( append ):
+        fp = open( write_file, "a" )
+    else:
+        fp = open( write_file, "w" )
+        
+    fp.write( json_string + "\n" )
+    fp.close
+
+def main( argv ):
 
     global EXT_b
+
+    # Exit variable: Bool
     EXT_b = False
+    # Sensor variable: Bool
+    SNR_b = False
+    # Master variable: Bool
+    MST_b = False
+    # Suppress variable: Bool
+    SPP_b = False
+    # Delay variable: Value
+    DLY_v = 5
+    # Filename variable: String
+    FLN_v = "sensor_"
+    # Output variable: Dictionary
+    OUT_d = { "name": "generic", "temp": 72, "target_temp": 72, "alarm": 0, "error": 0, "count": 0, "update": False }
     
-    CNT_v = 0
-    
-    signal.signal( signal.SIGINT, signal_handler )
-    
-    old_txt_logs = glob.glob('txt_logs/*.txt')
-    for f in old_txt_logs:
-        os.remove(f)
-
-    #project01.main(['-s','--name','sensor_05'])
-    #project01.main(['-s','--name','sensor_03'])
-    
-    process1 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_01','--count','1000','--delay','10','--suppress'])
-    time.sleep(MIN_DELAY)
-    process2 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_02','--count','2000','--delay','10','--suppress'])
-    time.sleep(MIN_DELAY)
-    process3 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_03','--count','3000','--delay','10','--suppress'])
-
-    # loop that will sleep and then check for all exit conditions
-    while( not EXT_b ):
-    
-        # sleep to limit processing
-        time.sleep(MAX_DELAY)
+    try:
+        opts, args = getopt.getopt( argv, "hsn:c:d:t:", ["help", "suppress", "name=", "count=", "delay=", "target_temp=" ] )
+    except getopt.GetoptError:
+        print( "Invalid input; use --help or -h for requirements" )
+        sys.exit(1)
         
-        # check for return value from the subprocesses
-        poll_p1 = process1.poll()
-        poll_p2 = process2.poll()
-        poll_p3 = process3.poll()
-
-        # if all the subprocesses had a return value, can exit the loop
-        if (poll_p1 is not None) and (poll_p2 is not None) and (poll_p3 is not None):
-            EXT_b = True
+    for opt, arg in opts:
+        if opt in ( "-h", "--help" ):
+            help_info()
+            sys.exit(0)
+        elif opt in ( "-d", "--delay" ):
+            DLY_v = int(arg)
+        elif opt in ( "-n", "--name" ):
+            OUT_d["name"] = arg
+        elif opt in ( "-c", "--count" ):
+            OUT_d["count"] = int(arg)
+        elif opt in ( "-s", "--suppress" ):
+            SPP_b = True
+        elif opt in ( "-t", "--target_temp" ):
+            OUT_d["target_temp"] = int(arg)
             
-        # back-up counter to run for defined number of loops
-        if( CNT_v >= MAX_COUNT ):
-            EXT_b = True
-        else:
-            CNT_v += 1
+    signal.signal( signal.SIGINT, signal_handler )
+    signal.signal( signal.SIGTERM, signal_handler )
+        
+    if( not os.path.isdir('txt_logs') ):
+        os.mkdir('txt_logs')
+        syslog_message( "txt_logs dir created" )
 
-    process1.terminate()
-    process2.terminate()
-    process3.terminate()
+    for ii in range( MAX_SENSORS ):
+        if not path.exists('txt_logs/' + FLN_v + str(ii) + '.txt' ):
+            FLN_v = FLN_v + str(ii) + '.txt'
+            break
+        elif( ii == MAX_SENSORS ):
+            print( "ERROR: Max number of sensors reached" )
+            sys.exit(1)
+            
+    write_json( "txt_logs/" + FLN_v, json.dumps( OUT_d ), False )
+    
+    syslog_message( "Sensor thread with name " + OUT_d["name"] + " setup with log file name " + FLN_v )
+    
+    sensor( DLY_v, FLN_v, OUT_d )
+            
 
-    time.sleep(MIN_DELAY*5)
 
-    project01.syslog_message( "All processes should be terminated" )
-
+if __name__ == "__main__": main( sys.argv[1:] )
 
 
-if __name__ == "__main__": main()
+
