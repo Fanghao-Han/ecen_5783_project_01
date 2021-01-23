@@ -15,7 +15,7 @@ def help_info():
     #print( "Add help info here" )
     syslog_message( "Add help info here" )
     
-def sensor( sensor_name, sleep_count, data ):
+def sensor( sleep_count, data ):
     while True:
         time.sleep(sleep_count)
         
@@ -23,19 +23,20 @@ def sensor( sensor_name, sleep_count, data ):
         JSN_v = json.dumps( data )
 
         #print( "Sensor " + sensor_name + " is alive" )
-        syslog_message( "Sensor " + sensor_name + " is alive with " + JSN_v )
+        syslog_message( "Sensor " + data["name"] + " is alive with " + JSN_v )
+
+        data["count"] = (data["count"] + 1)%10000
 
 def main( argv ):
 
     SNR_b = False
     MST_b = False
-    NME_s = ""
     CNT_v = 5
     
-    OUT_d = { "temp": 72, "alarm": 0, "error": 0 }
+    OUT_d = { "name": "generic", "temp": 72, "alarm": 0, "error": 0, "count": 0 }
     
     try:
-        opts, args = getopt.getopt( argv, "hsmn:c:", ["help", "sensor", "master", "name=", "count=" ] )
+        opts, args = getopt.getopt( argv, "hsmd:n:c:", ["help", "sensor", "master", "name=", "count=", "delay=" ] )
     except getopt.GetoptError:
         print( "Invalid input; use --help or -h for requirements" )
         sys.exit(1)
@@ -48,31 +49,24 @@ def main( argv ):
             SNR_b = True
         elif opt in ( "-m", "--master" ):
             MST_b = True
-        elif opt in ( "-n", "--name" ):
-            NME_s = arg
-        elif opt in ( "-c", "--count" ):
+        elif opt in ( "-d", "--delay" ):
             CNT_v = int(arg)
+        elif opt in ( "-n", "--name" ):
+            OUT_d["name"] = arg
+        elif opt in ( "-c", "--count" ):
+            OUT_d["count"] = int(arg)
 
     if( (SNR_b == True) and (MST_b == True) ):
         print( "Cannot be defined as master and as sensor; try again" )
         sys.exit(1)
-        
-    elif( NME_s == "" ):
-        if( SNR_b == True ):
-            print( "Generic sensor thread setup" )
-            sensor( "generic" , CNT_v )
-            
-        elif( MST_b == True ):
-            print( "Generic master thread setup" )
-    
     else:
         if( SNR_b == True ):
             #print( "Sensor thread with name " + NME_s + " setup" )
-            syslog_message( "Sensor thread with name " + NME_s + " setup" )
-            sensor( NME_s, CNT_v, OUT_d )
+            syslog_message( "Sensor thread with name " + OUT_d["name"] + " setup" )
+            sensor( CNT_v, OUT_d )
             
         elif( MST_b == True ):
-            print( "Master thread with name " + NME_s + " setup" )
+            print( "Master thread with name " + OUT_d["name"] + " setup" )
 
 
 if __name__ == "__main__": main( sys.argv[1:] )

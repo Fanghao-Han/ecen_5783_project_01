@@ -6,12 +6,12 @@ import project01
 import subprocess
 import time
 
-process1 = subprocess.Popen(['python3','project01.py','-s','--name','sensor_01','-c','2'])
+process1 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_01','--count','1000','--delay','10'])
 time.sleep(1)
-process2 = subprocess.Popen(['python3','project01.py','-s','--name','sensor_02','-c','3'])
+process2 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_02','--count','2000','--delay','12'])
 time.sleep(1)
-process3 = subprocess.Popen(['python3','project01.py','-s','--name','sensor_03','-c','4'])
-time.sleep(20)
+process3 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_03','--count','3000','--delay','4'])
+time.sleep(60)
 
 process1.terminate()
 process2.terminate()
