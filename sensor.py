@@ -10,6 +10,7 @@
 
 # add signal handler
 
+import glob
 import os
 import project01
 import signal
@@ -19,7 +20,7 @@ import time
 
 MIN_DELAY = 1
 MAX_DELAY = 15
-MAX_COUNT = 10
+MAX_COUNT = 5
 
 def signal_handler(signum, frame):
     global EXT_b
@@ -36,15 +37,19 @@ def main():
     CNT_v = 0
     
     signal.signal( signal.SIGINT, signal_handler )
+    
+    old_txt_logs = glob.glob('txt_logs/*.txt')
+    for f in old_txt_logs:
+        os.remove(f)
 
     #project01.main(['-s','--name','sensor_05'])
     #project01.main(['-s','--name','sensor_03'])
     
     process1 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_01','--count','1000','--delay','10','--suppress'])
     time.sleep(MIN_DELAY)
-    process2 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_02','--count','2000','--delay','12','--suppress'])
+    process2 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_02','--count','2000','--delay','10','--suppress'])
     time.sleep(MIN_DELAY)
-    process3 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_03','--count','3000','--delay','4','--suppress'])
+    process3 = subprocess.Popen(['python3','project01.py','--sensor','--name','sensor_03','--count','3000','--delay','10','--suppress'])
 
     # loop that will sleep and then check for all exit conditions
     while( not EXT_b ):

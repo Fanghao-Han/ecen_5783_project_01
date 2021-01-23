@@ -9,14 +9,19 @@
 ###############################################################################
 
 # packages
-import sys
 import getopt
-import time
-import syslog
+import glob
 import json
+import os
 import random
 import signal
-import os
+import sys
+import syslog
+import time
+
+from os import path
+
+MAX_SENSORS = 50
 
 # Signal Handler: catch signal but don't exit
 # let calling script handle and 
@@ -35,7 +40,7 @@ def help_info():
     #print( "Add help info here" )
     syslog_message( "Add help info here" )
     
-def sensor( sleep_count, data ):
+def sensor( sleep_count, log_name, data ):
     while( not EXT_b ):
         time.sleep( sleep_count )
         
@@ -44,6 +49,10 @@ def sensor( sleep_count, data ):
 
         #print( "Sensor " + sensor_name + " is alive" )
         syslog_message( "Sensor " + data["name"] + " is alive with " + JSN_v )
+        
+        fp = open("txt_logs/" + log_name , "w" )
+        fp.write( JSN_v )
+        fp.close
 
         data["count"] = (data["count"] + 1)%10000
         
@@ -52,6 +61,12 @@ def master( sleep_count ):
         time.sleep( sleep_count )
         syslog_message( "Master process is alive" )
         
+        log_files = glob.glob('txt_logs/*.txt')
+        for f in log_files:
+            fp = open( f, "r" )
+            print(fp.read())
+            fp.close
+            #print( f )
 
 def main( argv ):
 
@@ -67,6 +82,8 @@ def main( argv ):
     SPP_b = False
     # Delay variable: Value
     DLY_v = 5
+    # Filename variable: String
+    FLN_v = "sensor_"
     # Output variable: Dictionary
     OUT_d = { "name": "generic", "temp": 72, "alarm": 0, "error": 0, "count": 0 }
     
@@ -100,12 +117,26 @@ def main( argv ):
         signal.signal( signal.SIGINT, signal_handler_exit )
 
     if( (SNR_b == True) and (MST_b == True) ):
-        print( "Cannot be defined as master and as sensor; try again" )
+        print( "ERROR: Cannot be defined as master and as sensor; try again" )
         sys.exit(1)
     else:
         if( SNR_b == True ):
+            ii = 0
             syslog_message( "Sensor thread with name " + OUT_d["name"] + " setup" )
-            sensor( DLY_v, OUT_d )
+            
+            for ii in range( MAX_SENSORS ):
+                if not path.exists('txt_logs/' + FLN_v + str(ii) + '.txt' ):
+                    FLN_v = FLN_v + str(ii) + '.txt'
+                    break
+                elif( ii == MAX_SENSORS ):
+                    print( "ERROR: Max number of sensors reached" )
+                    sys.exit(1)
+                    
+            fp = open("txt_logs/" + FLN_v , "w" )
+            fp.write( "Setup" )
+            fp.close
+            
+            sensor( DLY_v, FLN_v, OUT_d )
             
         elif( MST_b == True ):
             syslog_message( "Master thread setup" )
