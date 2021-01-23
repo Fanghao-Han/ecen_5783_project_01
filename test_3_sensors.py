@@ -74,8 +74,11 @@ def main():
         else:
             CNT_v += 1
 
+    sensor.syslog_message( "term p1" )
     process1.terminate()
+    sensor.syslog_message( "term p2" )
     process2.terminate()
+    sensor.syslog_message( "term p3" )
     process3.terminate()
 
     time.sleep(MIN_DELAY*5)

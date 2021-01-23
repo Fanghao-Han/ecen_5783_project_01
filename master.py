@@ -1,62 +1,97 @@
 #!/bin/env python3
+###############################################################################
+#
+#
+#
+#
+#
+#
+###############################################################################
 
-# add signal handler
-
+# packages
+import getopt
+import glob
+import json
 import os
-import project01
+import random
 import signal
-import subprocess
 import sys
+import syslog
 import time
 
-MIN_DELAY = 1
-MAX_DELAY = 15
-MAX_COUNT = 10
+from os import path
 
+MAX_SENSORS = 50
+
+# Signal Handler: catch signal but don't exit
+# let calling script handle and     
 def signal_handler(signum, frame):
-
     global EXT_b
     EXT_b = True
-    
-    print( "Signal hit; will exit gracefully" )
-    project01.syslog_message( "Signal hit" )
+    syslog_message( "Signal hit; will exit gracefully" )
 
-def main():
+def syslog_message( message ):
+    syslog.syslog( "[PROJECT01] " + message )
+
+def help_info():
+    #print( "Add help info here" )
+    syslog_message( "Add help info here" )
+        
+def master( sleep_count ):
+    while( not EXT_b ):
+        time.sleep( sleep_count )
+        syslog_message( "Master process is alive" )
+        
+        log_files = glob.glob('txt_logs/*.txt')
+        for f in log_files:
+            fp = open( f, "r" )
+            print(fp.read())
+            fp.close
+            #print( f )
+
+def main( argv ):
 
     global EXT_b
+
+    # Exit variable: Bool
     EXT_b = False
+    # Delay variable: Value
+    DLY_v = 5
+    # Filename variable: String
+    FLN_v = "sensor_"
+    # Output variable: Dictionary
+    #OUT_d = { "name": "generic", "temp": 72, "target_temp": 72, "alarm": 0, "error": 0, "count": 0, "update": False }
     
-    CNT_v = 0
-    
+    try:
+        opts, args = getopt.getopt( argv, "hd:", ["help", "delay=" ] )
+    except getopt.GetoptError:
+        print( "Invalid input; use --help or -h for requirements" )
+        sys.exit(1)
+        
+    for opt, arg in opts:
+        if opt in ( "-h", "--help" ):
+            help_info()
+            sys.exit(0)
+        elif opt in ( "-d", "--delay" ):
+            DLY_v = int(arg)
+            
+            
     signal.signal( signal.SIGINT, signal_handler )
-
-    # project01.main(['-m','--name','sensor_master'])
-    
-    process1 = subprocess.Popen(['python3','project01.py','--master','--delay','10','--suppress'])
-
-    # loop that will sleep and then check for all exit conditions
-    while( not EXT_b ):
-    
-        # sleep to limit processing
-        time.sleep(MAX_DELAY)
+    signal.signal( signal.SIGTERM, signal_handler )
         
-        # check for return value from the subprocess
-        poll_p1 = process1.poll()
-        
-        # if the subprocess had a return value, can exit the loop
-        if (poll_p1 is not None):
-            EXT_b = True
-            
-        # back-up counter to run for defined number of loops
-        if( CNT_v >= MAX_COUNT ):
-            EXT_b = True
-        else:
-            CNT_v += 1
-            
-    process1.terminate()
+    if( not os.path.isdir('txt_logs') ):
+        os.mkdir('txt_logs')
+        syslog_message( "txt_logs dir created" )
 
-    time.sleep(MIN_DELAY*5)
+    old_txt_logs = glob.glob('txt_logs/*.txt')
+    for f in old_txt_logs:
+        os.remove(f)
 
-    project01.syslog_message( "All processes should be terminated" )
-    
-if __name__ == "__main__": main()
+    syslog_message( "Master thread setup" )
+    master( DLY_v )
+
+
+if __name__ == "__main__": main( sys.argv[1:] )
+
+
+
