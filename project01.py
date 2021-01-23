@@ -1,4 +1,12 @@
 #!/bin/env python3
+###############################################################################
+#
+#
+#
+#
+#
+#
+###############################################################################
 
 # packages
 import sys
@@ -7,6 +15,11 @@ import time
 import syslog
 import json
 import random
+import signal
+import os
+
+def signal_handler(signum, frame):
+    syslog_message( "Signal hit" )
 
 def syslog_message( message ):
     syslog.syslog( "[PROJECT01] " + message )
@@ -34,6 +47,8 @@ def main( argv ):
     CNT_v = 5
     
     OUT_d = { "name": "generic", "temp": 72, "alarm": 0, "error": 0, "count": 0 }
+    
+    signal.signal( signal.SIGINT, signal_handler )
     
     try:
         opts, args = getopt.getopt( argv, "hsmd:n:c:", ["help", "sensor", "master", "name=", "count=", "delay=" ] )
