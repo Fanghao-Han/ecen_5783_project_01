@@ -1,12 +1,10 @@
-<h1>
-  Embedded Design Interface: Project 1
-</h1>
-<h2>
-  Martin Lennartz
-  Fanghao Han
-  
-  ECEN 5783 - Spring 2021
-</h2>
+
+# Embedded Design Interface: Project 1
+
+## Martin Lennartz
+## Fanghao Han
+
+## ECEN 5783 - Spring 2021
 
 Add description here
 
