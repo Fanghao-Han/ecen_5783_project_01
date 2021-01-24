@@ -1,14 +1,13 @@
 #!/bin/env python3
-###############################################################################
-#
-#
-#
-#
-#
-#
-###############################################################################
 
-# add signal handler
+###############################################################################
+#
+#
+#
+#
+#
+#
+###############################################################################
 
 import glob
 import os
@@ -19,20 +18,23 @@ import sys
 import time
 
 MIN_DELAY = 1
-MAX_DELAY = 15
-MAX_COUNT = 5
+MAX_DELAY = 20
+MAX_COUNT = 10
 
-def signal_handler_sigint(signum, frame):    
-    print( "SIGINT hit; will exit after each sensor gracefully exits" )
-    sensor.syslog_message( "SIGINT hit" )
-    
-def signal_handler_sigterm(signum, frame):
+######################################################.
+# Signal Handler: catch signal but don't exit
+# Allows for graceful exit 
+######################################################
+def signal_handler(signum, frame):   
+
     global EXT_b
     EXT_b = True
+     
+    print( "Signal hit; will exit gracefully" )
+    master.syslog_message( "Signal hit" )
     
-    print( "SIGTERM hit; wrapper will terminate subprocesses" )
-    sensor.syslog_message( "SIGTERM hit" )
-    
+######################################################
+######################################################
 def main():
 
     global EXT_b
@@ -40,8 +42,9 @@ def main():
     
     CNT_v = 0
     
-    signal.signal( signal.SIGINT, signal_handler_sigint )
-    signal.signal( signal.SIGTERM, signal_handler_sigterm )
+    # Setup signal handler for wrapper script
+    signal.signal( signal.SIGINT, signal_handler )
+    signal.signal( signal.SIGTERM, signal_handler )
     
     old_txt_logs = glob.glob('txt_logs/*.txt')
     for f in old_txt_logs:
@@ -84,7 +87,9 @@ def main():
     time.sleep(MIN_DELAY*5)
 
     sensor.syslog_message( "All processes should be terminated" )
-
-
-
+    
+######################################################
+# when run as script, ref where to start
+######################################################
 if __name__ == "__main__": main()
+

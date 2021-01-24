@@ -1,6 +1,13 @@
 #!/bin/env python3
 
-# add signal handler
+###############################################################################
+#
+#
+#
+#
+#
+#
+###############################################################################
 
 import os
 import master
@@ -10,9 +17,13 @@ import sys
 import time
 
 MIN_DELAY = 1
-MAX_DELAY = 15
+MAX_DELAY = 20
 MAX_COUNT = 10
 
+######################################################
+# Signal Handler: catch signal but don't exit
+# Allows for graceful exit
+######################################################
 def signal_handler(signum, frame):
 
     global EXT_b
@@ -21,6 +32,8 @@ def signal_handler(signum, frame):
     print( "Signal hit; will exit gracefully" )
     master.syslog_message( "Signal hit" )
 
+######################################################
+######################################################
 def main():
 
     global EXT_b
@@ -28,11 +41,13 @@ def main():
     
     CNT_v = 0
     
+    # Setup signal handler for wrapper script
     signal.signal( signal.SIGINT, signal_handler )
+    signal.signal( signal.SIGTERM, signal_handler )
 
-    # project01.main(['-m','--name','sensor_master'])
-    
-    process1 = subprocess.Popen(['python3','master.py','--delay','10'])
+    # Create subprocess by calling created master.py script and command
+    # line options
+    process1 = subprocess.Popen(['python3','master.py','--delay','30'])
 
     # loop that will sleep and then check for all exit conditions
     while( not EXT_b ):
@@ -53,10 +68,17 @@ def main():
         else:
             CNT_v += 1
             
+    # Send SIGTERM signal to subprocess
     process1.terminate()
 
+    # Just added clean-up time; could be removed
     time.sleep(MIN_DELAY*5)
 
+    # Syslog update info
     master.syslog_message( "All processes should be terminated" )
     
+######################################################
+# when run as script, ref where to start
+######################################################
 if __name__ == "__main__": main()
+
