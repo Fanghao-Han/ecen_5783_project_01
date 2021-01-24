@@ -51,13 +51,12 @@ def master( sleep_count ):
 
     # Main while look that should only exit if changed signal handler
     while( not EXT_b ):
-    
-        # sleep for the delay count provided on the command line or the
-        # default value of 30 seconds
-        time.sleep( sleep_count )
         
         # just proof of life message to syslog; FIXME remove after development
         syslog_message( "Master process is alive" )
+        
+#        DAT_a = []
+#        cnt_1 = 0
         
         # find/store all logs in txt_logs directory and the for each file (f)
         # open the file and read each json line and append to the cleared 
@@ -67,30 +66,48 @@ def master( sleep_count ):
         log_files = glob.glob('txt_logs/*.txt')
         for f in log_files:
         
-            # clear data array and reset counter
-            data = []
-            cnt  = 0
+            # clear input array and reset counter
+            INP_a = []
+            cnt_2 = 0
         
             # open current file and append read line to array
             with open(f) as fp:
                 for line in fp:
-                    data.append( json.loads(line) )
-                    cnt += 1
+                    INP_a.append( json.loads(line) )
+                    cnt_2 += 1
 
-            # check number of lines read and print appropriate number
-            # less than 10
-            if( (cnt > 0) and (cnt<10) ):
-                for ii in range(0,cnt-1):
-                    print( data[ii]["name"] + " : " + str(data[ii]["temp"]) )
-
-            # 10 or more
-            elif( cnt >= 10 ):
-                for ii in range(cnt-11,cnt-1):
-                    print( data[ii]["name"] + " : " + str(data[ii]["temp"]) )
+            # check number of lines read and add appropriate number to data 
+            # array
+            if( cnt_2 > 0 ):
+                print( "------------------------------" )
+                print( " " + INP_a[0]["name"] )
+                # less than 10
+                if( (cnt_2 > 0) and (cnt_2<10) ):
+                    for ii in range(0,cnt_2):
+                        print( " - " + str(INP_a[ii]["count"]) + " : " + str(INP_a[ii]["temp"]) )
+#                        DAT_a.append( INP_a[ii]["name"] + " : " + str(INP_a[ii]["temp"]) )
+#                        cnt_1 += 1
+                # 10 or more
+                elif( cnt_2 >= 10 ):
+                    for ii in range(cnt_2-10,cnt_2):
+                        print( " - " + str(INP_a[ii]["count"]) + " : " + str(INP_a[ii]["temp"]) )
+#                        DAT_a.append( INP_a[ii]["name"] + " : " + str(INP_a[ii]["temp"]) )
+#                        cnt_1 += 1
                     
             # do nothing if count is 0
-                    
+        
+        # print out data array
+#        if( cnt_1 > 0 ):
+#            for ii in range(0,cnt_1-1):
+#                print( DAT_a[ii] )            
         # loop to next file or complete
+        
+        
+        print( "==============================" )
+    
+        # sleep for the delay count provided on the command line or the
+        # default value of 30 seconds
+        time.sleep( sleep_count )
     # loop back if EXT_b is still False
 
 ######################################################

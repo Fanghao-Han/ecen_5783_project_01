@@ -31,7 +31,7 @@ def signal_handler(signum, frame):
     EXT_b = True
      
     print( "Signal hit; will exit gracefully" )
-    master.syslog_message( "Signal hit" )
+    sensor.syslog_message( "Signal hit" )
     
 ######################################################
 ######################################################
@@ -79,10 +79,15 @@ def main():
 
     sensor.syslog_message( "term p1" )
     process1.terminate()
+    time.sleep(MIN_DELAY)
+
     sensor.syslog_message( "term p2" )
     process2.terminate()
+    time.sleep(MIN_DELAY)
+    
     sensor.syslog_message( "term p3" )
     process3.terminate()
+    time.sleep(MIN_DELAY)
 
     time.sleep(MIN_DELAY*5)
 

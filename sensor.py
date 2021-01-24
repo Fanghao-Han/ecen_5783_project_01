@@ -35,7 +35,6 @@ def help_info():
 ######################################################
 def sensor( sleep_count, log_name, data ):
     while( not EXT_b ):
-        time.sleep( sleep_count )
         
         data["update"] = True
         data["count"] = (data["count"] + 1)%10000
@@ -44,6 +43,10 @@ def sensor( sleep_count, log_name, data ):
         write_json( "txt_logs/" + log_name, json.dumps( data ) )
 
         syslog_message( "Sensor " + data["name"] + " is alive with " + json.dumps( data ) )
+        
+        time.sleep( sleep_count )
+        
+    # loop if EXT_b is False
 
 ######################################################
 # Signal Handler: catch signal but don't exit
@@ -142,9 +145,8 @@ def main( argv ):
             # FIXME - add syslog error message
             sys.exit(1)
             
-    # Originally wrote setup json info to log right away but think this can
-    # be removed now that the master script limits what it prints
-#    write_json( "txt_logs/" + FLN_v, json.dumps( OUT_d ) )
+    # Write setup data to block other logs from using same filename
+    #write_json( "txt_logs/" + FLN_v, json.dumps( OUT_d ) )
 
     # Send sensor/filename to syslog for tracking; could be removed    
     syslog_message( "Sensor thread with name " + OUT_d["name"] + " setup with log file name " + FLN_v + " and with " + json.dumps( OUT_d ) )
